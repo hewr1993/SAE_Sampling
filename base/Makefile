@@ -57,7 +57,7 @@ $(OBJ_DIR)/%.o: %
 
 
 $(OBJ_DIR)/%.d: %
-	@mkdir -pv $(dir $@)
+	@mkdir -p $(dir $@)
 	@echo "[dep] $< ..."
 	@$(CXX) $(INCLUDE_DIR) $(CXXFLAGS) -MM -MT "$(OBJ_DIR)/$(<:.cpp=.o) $(OBJ_DIR)/$(<:.cpp=.d)" "$<" > "$@"
 

@@ -3,6 +3,7 @@
 *.lo
 *.o
 *.obj
+*.d
 
 # Precompiled Headers
 *.gch
@@ -26,6 +27,7 @@
 *.exe
 *.out
 *.app
+base/bin/*
 
 # MAC
 .DS_Store
