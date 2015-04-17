@@ -26,3 +26,11 @@
 *.exe
 *.out
 *.app
+
+# MAC
+.DS_Store
+
+# Editing Files
+*.swp
+*.swo
+*~
