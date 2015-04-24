@@ -48,7 +48,7 @@ struct MMapFileImpl : MMapFile {
 
         // strech the file to size
         off_t result = lseek(fd, size - 1, SEEK_SET);
-	if (result < 0 ||  write(fd, "", 1) < 0) {
+		if (result < 0 ||  write(fd, "", 1) < 0) {
             close(fd);
             return NULL;
         }

@@ -37,3 +37,5 @@ base/bin/*
 *.swo
 *~
 
+# resource files
+base/bin/fake/*
