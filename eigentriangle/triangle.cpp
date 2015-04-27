@@ -160,7 +160,6 @@ double      EigenTriangle(Matrix* A, int m)
         }
     }
     double* T = new double[m * m];
-    FILE* fout = fopen("../../../eigenvalues-master/T.txt", "w");
     for (int i = 0; i < m; i ++)
     {
         for (int j = 0; j < m; j ++)
@@ -170,9 +169,6 @@ double      EigenTriangle(Matrix* A, int m)
             T[i * m + i - 1] = beta[i];
         if (i < m - 1)
             T[i * m + i + 1] = beta[i + 1];
-        for (int j = 0; j < m; j ++)
-            fprintf(fout, "%.5lf ", T[i * m + j]);
-        fprintf(fout, "\n");
     }
     qrAlmostUpperTriangle(T, m);
     traceMatrix(T, m);
@@ -195,6 +191,16 @@ double      EigenTriangle(Matrix* A, int m)
     }
     time_t endTime = clock();
     printf("Time cost for EigenTriangle: %.5lf\n", (endTime - startTime + 0.0) / CLOCKS_PER_SEC);
+
+    delete []w;
+    delete []T;
+    delete []alpha;
+    delete []beta;
+    for (int i = 0; i < m; i ++)
+    {
+        delete []v[i];
+    }
+    delete []v;
     return sum / 6;
 }
 
@@ -223,7 +229,7 @@ Matrix*     GenerateNetwork(int n, double p)
 
 int         main()
 {
-    int N = 10000;              // number of nodes
+    int N = 1000;               // number of nodes
     double p = 0.7;             // probability of generating a edge
     double k = 0.01;            // top k*n eigenvalues we care
 
