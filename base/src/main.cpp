@@ -5,6 +5,7 @@
 	> Mail: hewr2010@gmail.com 
  ************************************************************************/
 #include "triangle_brute_force.h"
+#include "triangle_stream.h"
 #include "storage/graph_builder.h"
 #include "storage/mgraph.h"
 #include <iostream>
@@ -16,8 +17,7 @@ using namespace std;
 using namespace sae::io;
 
 
-void makeFakeData() {
-	int numVertex = 6;
+void makeFakeData(int numVertex=10) {
 	int numEdge = rand() % (numVertex * numVertex / 3) + numVertex;
 	GraphBuilder<int> graph;
 	for (int i = 0; i < numVertex; ++i) graph.AddVertex(i, 0);
@@ -31,7 +31,7 @@ void makeFakeData() {
 		} while (edges.find(edge) != edges.end());
 		edges[edge] = true;
 		graph.AddEdge(edge.first, edge.second, 0);
-		cout << edge.first << " " << edge.second << endl;
+		//cout << edge.first << " " << edge.second << endl;
 	}
 	system("mkdir -p fake");
 	graph.Save("./fake/graph");
@@ -39,14 +39,26 @@ void makeFakeData() {
 
 
 void testTriangle(char* prefix="./fake/graph") {
+	MappedGraph *graph;
+	graph = MappedGraph::Open(prefix);
 	Triangle_Brute_Force bf(prefix);
-	cout << bf.count() << endl;
+	int bf_cnt = bf.count();
+	cout << "[brute force]\t" << bf_cnt << endl;
+	Triangle_Stream stm(50, 1000);
+	int stream_cnt(0);
+	for (auto itr = graph->Edges(); itr->Alive(); itr->Next()) {
+		vid_t x = itr->Source()->GlobalId(), y = itr->Target()->GlobalId();
+		stream_cnt = stm.count(x, y);
+	}
+	cout << endl;
+	cout << "[streaming]\t" << stream_cnt << endl;
+	cout << "\terror " << (float(bf_cnt - stream_cnt) / bf_cnt * 100) << "%" << endl;
 }
 
 
 int main(int argc, char **argv) {
 	srand(time(NULL));
-	//makeFakeData();
+	//makeFakeData(300);
 	testTriangle();
 
     return 0;
