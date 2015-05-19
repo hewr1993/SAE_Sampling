@@ -38,4 +38,4 @@ base/bin/*
 *~
 
 # resource files
-base/bin/fake/*
+base/fake/*
