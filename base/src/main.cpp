@@ -9,6 +9,7 @@
 #include "triangle_stream.h"
 #include "storage/graph_builder.h"
 #include "storage/mgraph.h"
+#include "report/table_generator.h"
 #include <iostream>
 #include <cstdio>
 #include <ctime>
@@ -62,11 +63,25 @@ void testTriangle(char* prefix="./fake/graph") {
 }
 
 
+void testTable() {
+	TableGenerator table;
+	string title[] = {"z", "y", "x"};
+	table.setTitle(vector<string>(title, title + sizeof(title) / sizeof(title[0])));
+	for (int l = 0; l < rand() % 10 + 1; ++l) {
+		vector<string> content;
+		content.push_back(toString(l));
+		for (int i = 0; i < rand() % 10 + 1; ++i) content.push_back(toString(rand() % 1000));
+		table.addRow(content);
+	}
+	cout << table.report() << endl;
+}
+
+
 int main(int argc, char **argv) {
 	srand(time(NULL));
+	//testTable();
 	//makeFakeData(300);
 	testTriangle();
-
     return 0;
 }
 
