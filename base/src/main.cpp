@@ -4,6 +4,7 @@
 	> Created Time: Fri Apr 17 16:32:22 2015
 	> Mail: hewr2010@gmail.com 
  ************************************************************************/
+#include "argparse/macro-argparse-jquery.hh"
 #include "solver/solver.h"
 #include "triangle_brute_force.h"
 #include "triangle_stream.h"
@@ -17,6 +18,13 @@
 #include <cstdlib>
 using namespace std;
 using namespace sae::io;
+
+DEF_ARGUMENT_CLASS(
+	Argument,
+	string,		content,	"test",		OPTIONAL,	OPT_SLH(-c, --content, "what to say"),
+	//int,		number,		1,			REQUIRED,	OPT_LH(-n, "what number is it? "),
+	bool,		decorate,	true,		OPTIONAL,	OPT_SLWH(-d, --decorate, true, "decoreate the output")
+);
 
 
 void makeFakeData(int numVertex=10) {
@@ -78,6 +86,12 @@ void testTable() {
 
 
 int main(int argc, char **argv) {
+	// parse arguments
+	Argument args;
+	if (!args.parse_args(argc, argv)) return 1;
+	//cout << args.content() << endl;
+	
+	// main process
 	srand(time(NULL));
 	//testTable();
 	//makeFakeData(300);
