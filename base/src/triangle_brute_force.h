@@ -1,11 +1,10 @@
 #include "storage/mgraph.h"
-#include <map>
+#include "solver/solver.h"
 
-class Triangle_Brute_Force {
+class Triangle_Brute_Force:public sae::Solver<int> {
 public:
-	Triangle_Brute_Force(char* prefix);
+	Triangle_Brute_Force(sae::io::MappedGraph *graph);
 	~Triangle_Brute_Force();
-	int count(); // return exact number of triangles
+	int solve();
 private:
-	sae::io::MappedGraph *graph;
 };

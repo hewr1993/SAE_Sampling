@@ -11,16 +11,14 @@
 using namespace std;
 using namespace sae::io;
 
-Triangle_Brute_Force::Triangle_Brute_Force(char* prefix) {
-	graph = sae::io::MappedGraph::Open(prefix);
+Triangle_Brute_Force::Triangle_Brute_Force(MappedGraph *graph)
+	:Solver(graph) {
 }
 
 Triangle_Brute_Force::~Triangle_Brute_Force() {
-	graph->Close();
-	delete graph;
 }
 
-int Triangle_Brute_Force::count() {
+int Triangle_Brute_Force::solve() {
 	// remove duplicate edges
 	map<pair<vid_t, vid_t>, bool> edges;
 	for (auto itr = graph->Edges(); itr->Alive(); itr->Next()) {

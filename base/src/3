@@ -1,0 +1,29 @@
+#ifndef SOLVER_HPP
+#define SOLVER_HPP
+
+#include "storage/mgraph.h"
+
+namespace sae {
+/*
+ * specific algorithm applied to graph data
+ */
+template <class return_t>
+class Solver {
+    public:
+		Solver(sae::io::MappedGraph *graph) {
+			this->graph = graph;
+		}
+		~Solver() {
+			delete graph;
+		}
+		virtual return_t solve() {} // main process
+		virtual return_t solve(sae::io::EdgeIteratorPtr*) {} // online method (edges)
+		virtual return_t solve(sae::io::VertexIteratorPtr*) {} // online method (vertexes)
+	private:
+		Solver(const Solver&) {}
+	protected:
+		sae::io::MappedGraph *graph;
+};
+}
+
+#endif

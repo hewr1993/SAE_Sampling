@@ -4,6 +4,7 @@
 	> Created Time: Fri Apr 17 16:32:22 2015
 	> Mail: hewr2010@gmail.com 
  ************************************************************************/
+#include "solver/solver.h"
 #include "triangle_brute_force.h"
 #include "triangle_stream.h"
 #include "storage/graph_builder.h"
@@ -41,17 +42,22 @@ void makeFakeData(int numVertex=10) {
 void testTriangle(char* prefix="./fake/graph") {
 	MappedGraph *graph;
 	graph = MappedGraph::Open(prefix);
-	Triangle_Brute_Force bf(prefix);
-	int bf_cnt = bf.count();
+	// brute force
+	Triangle_Brute_Force bf(graph);
+	int bf_cnt = bf.solve();
 	cout << "[brute force]\t" << bf_cnt << endl;
+	// streaming
 	Triangle_Stream stm(50, 1000);
 	int stream_cnt(0);
 	for (auto itr = graph->Edges(); itr->Alive(); itr->Next()) {
 		vid_t x = itr->Source()->GlobalId(), y = itr->Target()->GlobalId();
-		stream_cnt = stm.count(x, y);
+		auto res = stm.solve(x, y);
+		stream_cnt = res.second;
+		cout << "\r" << "[streaming]\t" << res.first << " " << res.second << flush;
 	}
 	cout << endl;
 	cout << "[streaming]\t" << stream_cnt << endl;
+	// evaluation
 	cout << "\terror " << (float(bf_cnt - stream_cnt) / bf_cnt * 100) << "%" << endl;
 }
 

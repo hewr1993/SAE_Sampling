@@ -18,7 +18,7 @@ using namespace sae::io;
 #define wedge_avail(x) ((x)[0] + (x)[1] + (x)[2] > 0)
 
 Triangle_Stream::Triangle_Stream(int se, int sw)
-	:se(se), sw(sw) {
+	:Solver(NULL), se(se), sw(sw) {
 	edge_count = 0;
 	edge_res = new vid_t*[se];
 	for (int i = 0; i < se; ++i) {
@@ -41,7 +41,7 @@ Triangle_Stream::~Triangle_Stream() {
 	delete[] edge_res, wedge_res, isClosed;
 }
 
-int Triangle_Stream::count(vid_t x, vid_t y) {
+pair<float, float> Triangle_Stream::solve(vid_t x, vid_t y) {
 	++edge_count;
 	if (x > y) swap(x, y); // save the trouble of index combinations
 	update(x, y);
@@ -50,8 +50,7 @@ int Triangle_Stream::count(vid_t x, vid_t y) {
 	rho /= sw;
 	float K = rho * 3;
 	float T = (rho * edge_count * edge_count / (se * (se - 1))) * tot_wedges;
-	cout << "\r" << "[streaming]\t" << K << " " << T << flush;
-	return T;
+	return make_pair(K, T);
 }
 
 void Triangle_Stream::update(vid_t x, vid_t y) {

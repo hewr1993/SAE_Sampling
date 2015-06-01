@@ -1,10 +1,11 @@
 #include "storage/mgraph.h"
+#include "solver/solver.h"
 
-class Triangle_Stream {
+class Triangle_Stream:public sae::Solver<std::pair<float, float> > {
 public:
 	Triangle_Stream(int se, int sw); // size of edges / wedges
 	~Triangle_Stream();
-	int count(sae::io::vid_t, sae::io::vid_t); // return exact number of triangles
+	std::pair<float, float> solve(sae::io::vid_t, sae::io::vid_t); // return exact number of triangles
 private:
 	void update(sae::io::vid_t, sae::io::vid_t);
 
