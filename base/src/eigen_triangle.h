@@ -15,5 +15,6 @@ public:
     ~EigenTriangle();
     // return approximate number of triangles
     double solve(int maxIter, double tol);
+    double solve(int maxIter);
 };
 
