@@ -54,11 +54,13 @@ void testTriangle(char* prefix="./fake/graph") {
 	graph = MappedGraph::Open(prefix);
 	// brute force
 	Triangle_Brute_Force bf(graph);
-    EigenTriangle et(graph);
 	int bf_cnt = bf.solve();
-    double et_cnt = et.solve(100, 1);
+    // eigen
+    EigenTriangle et(graph);
+    double et_cnt = et.solve(graph -> VertexCount() * 0.1);
 	cout << "[brute force]\t" << bf_cnt << endl;
     cout << "[eigen triangle]\t" << et_cnt << endl;
+    cout << "\terror " << (float(bf_cnt - et_cnt) / bf_cnt * 100) << "%" << endl;
 	// streaming
 	Triangle_Stream stm(50, 1000);
 	int stream_cnt(0);
