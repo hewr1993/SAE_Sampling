@@ -18,7 +18,7 @@ DIRNAME=$(shell basename `pwd`)
 
 
 PKGCONFIG_LIBS =
-INCLUDE_DIR = -Isrc/lib
+INCLUDE_DIR = -Isrc/lib -I/home/weiran/.local/include/eigen3
 
 
 # CXXFLAGS += -O2

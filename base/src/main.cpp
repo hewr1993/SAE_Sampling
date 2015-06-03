@@ -53,17 +53,16 @@ void makeFakeData(int numVertex=10, double p = 0.1) {
 void testTriangle(char* prefix="./fake/graph") {
 	MappedGraph *graph;
 	graph = MappedGraph::Open(prefix);
-	// brute force
-	Triangle_Brute_Force bf(graph);
-	int bf_cnt = bf.solve();
     // eigen
     EigenTriangle et(graph);
     double et_cnt = et.solve(graph -> VertexCount() * 0.1);
-	cout << "[brute force]\t" << bf_cnt << endl;
     cout << "[eigen triangle]\t" << et_cnt << endl;
-    cout << "\terror " << (float(bf_cnt - et_cnt) / bf_cnt * 100) << "%" << endl;
+	// brute force
+    Triangle_Brute_Force bf(graph);
+    int bf_cnt = bf.solve();
+    cout << "[brute force]\t" << bf_cnt << endl;
 	// streaming
-	Triangle_Stream stm(50, 1000);
+	/*Triangle_Stream stm(50, 1000);
 	int stream_cnt(0);
 	for (auto itr = graph->Edges(); itr->Alive(); itr->Next()) {
 		vid_t x = itr->Source()->GlobalId(), y = itr->Target()->GlobalId();
@@ -72,9 +71,11 @@ void testTriangle(char* prefix="./fake/graph") {
 		cout << "\r" << "[streaming]\t" << res.first << " " << res.second << flush;
 	}
 	cout << endl;
-	cout << "[streaming]\t" << stream_cnt << endl;
+	cout << "[streaming]\t" << stream_cnt << endl;*/
 	// evaluation
-	cout << "\terror " << (float(bf_cnt - stream_cnt) / bf_cnt * 100) << "%" << endl;
+	//cout << "\terror " << (float(bf_cnt - stream_cnt) / bf_cnt * 100) << "%" << endl;
+    //cout << "\terror " << (float(bf_cnt - et_cnt) / bf_cnt * 100) << "%" << endl;
+    graph->Close();
 }
 
 
@@ -93,7 +94,7 @@ void testTable() {
 
 
 int main(int argc, char **argv) {
-    int vertexNum = 500;
+    int vertexNum = 100;
     double edgeProb = 0.7;
 	// parse arguments
 	Argument args;
@@ -103,7 +104,7 @@ int main(int argc, char **argv) {
 	// main process
 	srand(time(NULL));
 	//testTable();
-	//makeFakeData(vertexNum, edgeProb);
+	makeFakeData(vertexNum, edgeProb);
 	testTriangle();
     return 0;
 }

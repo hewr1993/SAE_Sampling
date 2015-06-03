@@ -14,7 +14,7 @@ class Solver {
 			this->graph = graph;
 		}
 		~Solver() {
-			delete graph;
+			//delete graph;
 		}
 		virtual return_t solve() {} // main process
 		virtual return_t solve(sae::io::vid_t) {} // online method (vertex)
