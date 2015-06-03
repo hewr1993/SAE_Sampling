@@ -6,6 +6,7 @@
  ************************************************************************/
 #include "argparse/macro-argparse-jquery.hh"
 #include "solver/solver.h"
+#include "eigen_triangle.h"
 #include "triangle_brute_force.h"
 #include "triangle_stream.h"
 #include "storage/graph_builder.h"
@@ -53,8 +54,11 @@ void testTriangle(char* prefix="./fake/graph") {
 	graph = MappedGraph::Open(prefix);
 	// brute force
 	Triangle_Brute_Force bf(graph);
+    EigenTriangle et(graph);
 	int bf_cnt = bf.solve();
+    double et_cnt = et.solve(100, 1);
 	cout << "[brute force]\t" << bf_cnt << endl;
+    cout << "[eigen triangle]\t" << et_cnt << endl;
 	// streaming
 	Triangle_Stream stm(50, 1000);
 	int stream_cnt(0);
