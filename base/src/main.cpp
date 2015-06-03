@@ -28,8 +28,9 @@ DEF_ARGUMENT_CLASS(
 );
 
 
-void makeFakeData(int numVertex=10) {
-	int numEdge = rand() % (numVertex * numVertex / 3) + numVertex;
+void makeFakeData(int numVertex=10, double p = 0.1) {
+	//int numEdge = rand() % (numVertex * numVertex / 3) + numVertex;
+    int numEdge = (numVertex * (numVertex - 1)) / 2 * p;
 	GraphBuilder<int> graph;
 	for (int i = 0; i < numVertex; ++i) graph.AddVertex(i, 0);
 	map<pair<int, int>, bool> edges;
@@ -92,6 +93,8 @@ void testTable() {
 
 
 int main(int argc, char **argv) {
+    int vertexNum = 500;
+    double edgeProb = 0.7;
 	// parse arguments
 	Argument args;
 	if (!args.parse_args(argc, argv)) return 1;
@@ -100,7 +103,7 @@ int main(int argc, char **argv) {
 	// main process
 	srand(time(NULL));
 	//testTable();
-	//makeFakeData(300);
+	//makeFakeData(vertexNum, edgeProb);
 	testTriangle();
     return 0;
 }
