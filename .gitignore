@@ -39,3 +39,6 @@ base/bin/*
 
 # resource files
 base/fake/*
+data/data/*
+data/bin/*
+data/obj/*
