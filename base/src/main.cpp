@@ -13,6 +13,7 @@
 #include "storage/mgraph.h"
 #include "report/table_generator.h"
 #include <iostream>
+#include <fstream>
 #include <cstdio>
 #include <ctime>
 #include <map>
@@ -51,18 +52,23 @@ void makeFakeData(int numVertex=10, double p = 0.1) {
 
 
 void testTriangle(char* prefix="./fake/graph") {
+    // prepare graph
 	MappedGraph *graph;
 	graph = MappedGraph::Open(prefix);
-    // eigen
-    EigenTriangle et(graph);
-    double et_cnt = et.solve(graph -> VertexCount() * 0.1);
-    cout << "[eigen triangle]\t" << et_cnt << endl;
+    // set up table
+	TableGenerator table;
+	string title[] = {"vertexes", "edges", "Brute Force", "Stream", "Eigen"};
+	table.setTitle(vector<string>(title, title + sizeof(title) / sizeof(title[0])));
+    vector<string> score;
+    score.push_back(toString<int>(graph->VertexCount()));
+    score.push_back(toString<int>(graph->EdgeCount()));
 	// brute force
     Triangle_Brute_Force bf(graph);
     int bf_cnt = bf.solve();
     cout << "[brute force]\t" << bf_cnt << endl;
+    score.push_back(toString<int>(bf_cnt));
 	// streaming
-	/*Triangle_Stream stm(50, 1000);
+	Triangle_Stream stm(50, 1000);
 	int stream_cnt(0);
 	for (auto itr = graph->Edges(); itr->Alive(); itr->Next()) {
 		vid_t x = itr->Source()->GlobalId(), y = itr->Target()->GlobalId();
@@ -71,11 +77,24 @@ void testTriangle(char* prefix="./fake/graph") {
 		cout << "\r" << "[streaming]\t" << res.first << " " << res.second << flush;
 	}
 	cout << endl;
-	cout << "[streaming]\t" << stream_cnt << endl;*/
+	cout << "[streaming]\t" << stream_cnt << endl;
+    score.push_back(toString<int>(stream_cnt));
+    // eigen
+    EigenTriangle et(graph);
+    double et_cnt = et.solve(graph -> VertexCount() * 0.1);
+    cout << "[eigen triangle]\t" << et_cnt << endl;
+    score.push_back(toString<int>(int(et_cnt)));
 	// evaluation
-	//cout << "\terror " << (float(bf_cnt - stream_cnt) / bf_cnt * 100) << "%" << endl;
-    //cout << "\terror " << (float(bf_cnt - et_cnt) / bf_cnt * 100) << "%" << endl;
+    cout << "\terror " << (float(bf_cnt - stream_cnt) / bf_cnt * 100) << "%" << endl;
+    cout << "\terror " << (float(bf_cnt - et_cnt) / bf_cnt * 100) << "%" << endl;
     graph->Close();
+    // report table
+    table.addRow(score);
+    string tableContent = table.report();
+    cout << tableContent << endl;
+    ofstream fout("report.md");
+    fout << tableContent << endl;
+    fout.close();
 }
 
 
