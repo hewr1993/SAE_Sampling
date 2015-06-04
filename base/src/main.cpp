@@ -18,6 +18,7 @@
 #include <ctime>
 #include <map>
 #include <cstdlib>
+
 using namespace std;
 using namespace sae::io;
 
@@ -55,19 +56,62 @@ void testTriangle(char* prefix="./fake/graph") {
     // prepare graph
 	MappedGraph *graph;
 	graph = MappedGraph::Open(prefix);
+
     // set up table
 	TableGenerator table;
-	string title[] = {"vertexes", "edges", "Brute Force", "Stream", "Eigen"};
+	string title[] = {"Algo.", "Res.", "Error (%)", "Time (sec.)"};
 	table.setTitle(vector<string>(title, title + sizeof(title) / sizeof(title[0])));
-    vector<string> score;
-    score.push_back(toString<int>(graph->VertexCount()));
-    score.push_back(toString<int>(graph->EdgeCount()));
-	// brute force
+    vector<string> bf_row;
+    bf_row.push_back("BruteForce");
+    vector<string> greedy_row;
+    greedy_row.push_back("Greedy");
+    vector<string> eigen_row;
+    eigen_row.push_back("EigenTriangle");
+    vector<string> stm_row;
+    stm_row.push_back("Streaming");
+    //score.push_back(toString<int>(graph->VertexCount()));
+    //score.push_back(toString<int>(graph->EdgeCount()));
+
+    cout << "===== graph information =====" << endl;
+    cout << "#vertices: " << graph -> VertexCount() << endl;
+    cout << "#edges: " << graph -> EdgeCount() << endl;
+    cout << "=============================" << endl;
+	
+    // brute force
     Triangle_Brute_Force bf(graph);
+    time_t bf_start_time = clock();
     int bf_cnt = bf.solve();
+    time_t bf_end_time = clock();
     cout << "[brute force]\t" << bf_cnt << endl;
-    score.push_back(toString<int>(bf_cnt));
-	// streaming
+    double bf_error = 0.0;
+    bf_row.push_back(toString<int>(bf_cnt));
+    bf_row.push_back(toString<double>(bf_error));
+    bf_row.push_back(toString<double>((bf_end_time - bf_start_time + 0.0) / CLOCKS_PER_SEC));
+
+    // greedy
+    time_t greedy_start_time = clock();
+    int greedy_cnt = bf.solve(0.8);
+    time_t greedy_end_time = clock();
+    cout << "[greedy]\t" << greedy_cnt << endl;
+    double greedy_error = double(bf_cnt - greedy_cnt) / bf_cnt * 100;
+    greedy_row.push_back(toString<int>(greedy_cnt));
+    greedy_row.push_back(toString<double>(greedy_error));
+    greedy_row.push_back(toString<double>((greedy_end_time - greedy_start_time + 0.0) / CLOCKS_PER_SEC));
+
+    // eigen
+    EigenTriangle et(graph);
+    time_t et_start_time = clock();
+    double k = 0.1;
+    double et_cnt = et.solve(graph -> VertexCount() * k);
+    time_t et_end_time = clock();
+    cout << "[eigen triangle]\t" << et_cnt << endl;
+    double eigen_error = double(bf_cnt - et_cnt) / bf_cnt * 100;
+    eigen_row.push_back(toString<int>(int(et_cnt)));
+    eigen_row.push_back(toString<double>(double(eigen_error)));
+    eigen_row.push_back(toString<double>((et_end_time - et_start_time + 0.0) / CLOCKS_PER_SEC));
+
+    // streaming
+    time_t stm_start_time = clock();
 	Triangle_Stream stm(50, 1000);
 	int stream_cnt(0);
 	for (auto itr = graph->Edges(); itr->Alive(); itr->Next()) {
@@ -76,25 +120,28 @@ void testTriangle(char* prefix="./fake/graph") {
 		stream_cnt = res.second;
 		cout << "\r" << "[streaming]\t" << res.first << " " << res.second << flush;
 	}
+    time_t stm_end_time = clock();
 	cout << endl;
 	cout << "[streaming]\t" << stream_cnt << endl;
-    score.push_back(toString<int>(stream_cnt));
-    // eigen
-    EigenTriangle et(graph);
-    double et_cnt = et.solve(graph -> VertexCount() * 0.1);
-    cout << "[eigen triangle]\t" << et_cnt << endl;
-    score.push_back(toString<int>(int(et_cnt)));
-	// evaluation
+    double stm_error = double(bf_cnt - stream_cnt) / bf_cnt * 100;
+    stm_row.push_back(toString<int>(stream_cnt));
+    stm_row.push_back(toString<double>(stm_error));
+    stm_row.push_back(toString<double>((stm_end_time - stm_start_time + 0.0) / CLOCKS_PER_SEC));
+    /*
     cout << "\terror " << (float(bf_cnt - stream_cnt) / bf_cnt * 100) << "%" << endl;
     cout << "\terror " << (float(bf_cnt - et_cnt) / bf_cnt * 100) << "%" << endl;
-    graph->Close();
+    */
     // report table
-    table.addRow(score);
+    table.addRow(bf_row);
+    table.addRow(greedy_row);
+    table.addRow(eigen_row);
+    table.addRow(stm_row);
     string tableContent = table.report();
     cout << tableContent << endl;
     ofstream fout("report.md");
     fout << tableContent << endl;
     fout.close();
+    graph -> Close();
 }
 
 
