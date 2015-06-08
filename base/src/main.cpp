@@ -52,7 +52,7 @@ void makeFakeData(int numVertex=10, double p = 0.1) {
 }
 
 
-void testTriangle(char* prefix="../data/data/twitter") {
+void testTriangle(char* prefix="../data/data/amazon") {
     // prepare graph
     cout << "Loading data from " << prefix << endl;
 	MappedGraph *graph;
@@ -102,8 +102,9 @@ void testTriangle(char* prefix="../data/data/twitter") {
     // eigen
     EigenTriangle et(graph);
     time_t et_start_time = clock();
-    double k = 0.01;
-    double et_cnt = et.solve(graph -> VertexCount() * k);
+    double k = 1;
+    double tol = 1;
+    double et_cnt = et.solve(graph -> VertexCount() * k, tol);
     time_t et_end_time = clock();
     cout << "[eigen triangle]\t" << et_cnt << endl;
     double eigen_error = double(bf_cnt - et_cnt) / bf_cnt * 100;
