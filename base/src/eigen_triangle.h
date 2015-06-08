@@ -2,7 +2,6 @@
 #include "storage/mgraph.h"
 #include "solver/solver.h"
 
-
 using Eigen::RowMajor;
 using Eigen::SparseMatrix;
 
@@ -16,5 +15,8 @@ public:
     // return approximate number of triangles
     double solve(int maxIter, double tol);
     double solve(int maxIter);
+private:
+    SparseMatrix<double> adjMatrix;
+    SparseMatrix<double, RowMajor> omega; // used for partial reorthogonalization
 };
 

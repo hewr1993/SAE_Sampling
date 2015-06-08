@@ -14,30 +14,63 @@ using std::string;
 using std::istringstream;
 using Eigen::VectorXd;
 using Eigen::MatrixXd;
+using Eigen::Triplet;
 using namespace sae::io;
+
+typedef Triplet<double> T;
 
 EigenTriangle::EigenTriangle(MappedGraph *graph):Solver(graph)
 {
-}
-
-EigenTriangle::~EigenTriangle()
-{
-
-}
-
-// full reorthogonalization
-double                  EigenTriangle::solve(int maxIter)
-{
     // build adjacent matrix
     int n = graph -> VertexCount();
-    SparseMatrix<double> adjMatrix(n, n);
+    vector<Triplet<double> > tripletList;
+    //vector<Triplet<double> > edgeList;
     for (auto iter = graph -> Edges(); iter -> Alive(); iter -> Next())
     {
         vid_t x = iter -> Source() -> GlobalId();
         vid_t y = iter -> Target() -> GlobalId();
-        adjMatrix.coeffRef(x, y) = 1;
-        adjMatrix.coeffRef(y, x) = 1;
+        tripletList.push_back(Triplet<double>(x, y, 1));
+        tripletList.push_back(Triplet<double>(y, x, 1));
+        //adjMatrix.coeffRef(x, y) = 1;
+        //adjMatrix.coeffRef(y, x) = 1;
     }
+    adjMatrix.resize(n, n);
+    adjMatrix.setFromTriplets(tripletList.begin(), tripletList.end());
+    // try compress mode
+    adjMatrix.makeCompressed();
+    tripletList.clear();
+    printf("[EigenTriangle] Matrix is ready to go!\n");
+}
+
+EigenTriangle::~EigenTriangle()
+{
+    adjMatrix.resize(0, 0);
+}
+
+/*
+double                  EigenTriangle::solve(int maxIter, double tol)
+{
+    int n = graph -> VertexCount();
+    Sparse S(n);
+    for (auto iter = graph -> Edges(); iter -> Alive(); iter -> Next())
+    {
+        vid_t x = iter -> Source() -> GolbalId();
+        vid_t y = iter -> Source() -> GlobalId();
+        S.set(x, y, 1);
+        S.set(y, x, 1);
+    }
+    vector<double> eigenList;
+    for (int i = 0; i < maxIter; i ++)
+    {
+        
+    }
+}
+*/
+
+// full reorthogonalization
+double                  EigenTriangle::solve(int maxIter)
+{
+    int n = graph -> VertexCount();
     srand(time(0));
     // check if rows == cols()
     if (maxIter > n)
@@ -49,8 +82,15 @@ double                  EigenTriangle::solve(int maxIter)
     VectorXd beta(n + 1);
     beta[0] = 0;
     VectorXd w;
+    int last = 0;
+    printf("%d\n", maxIter);
     for (int i = 0; i < maxIter; i ++)
     {
+        if (i * 100 / maxIter > last + 10 || i == maxIter - 1)
+        {
+            last = (i + 1) * 100 / maxIter;
+            std::cout << "\r" << "[EigenTriangle] Processing " << last << "% ..." << std::flush;
+        }
         w = adjMatrix * v[i];
         alpha[i] = w.dot(v[i]);
         if (i == maxIter - 1)
@@ -65,6 +105,7 @@ double                  EigenTriangle::solve(int maxIter)
             v[i + 1] = v[i + 1] - v[i + 1].dot(v[j]) * v[j];
         }
     }
+    printf("\n");
     int k = maxIter;
     MatrixXd T = MatrixXd::Zero(k, k);
     for (int i = 0; i < k; i ++)
@@ -93,26 +134,24 @@ double                  EigenTriangle::solve(int maxIter)
 // partial reorthogonalization
 double                  EigenTriangle::solve(int maxIter, double tol)
 {
-    // build adjacent matrix
     int n = graph -> VertexCount();
-    SparseMatrix<double> adjMatrix(n, n);
-    for (auto iter = graph -> Edges(); iter -> Alive(); iter -> Next())
-    {
-        vid_t x = iter -> Source() -> GlobalId();
-        vid_t y = iter -> Target() -> GlobalId();
-        adjMatrix.coeffRef(x, y) = 1;
-        adjMatrix.coeffRef(y, x) = 1;
-    }
     srand(time(0));
     if (maxIter > n)
         maxIter = n;
     double na = adjMatrix.norm();
     double phi = tol * na;
     double delta = tol * sqrt(na);
-    MatrixXd omega = MatrixXd::Zero(n + 2, n + 2);
-    for (int i = 1; i < n + 2; i ++)
-        omega(i, i - 1) = phi;
-    omega += MatrixXd::Identity(n + 2, n + 2);
+    vector<Triplet<double> > omega_vector;
+    //MatrixXd omega = MatrixXd::Zero(n + 2, n + 2);
+    for (int i = 0; i < n + 2; i ++)
+    {
+        //omega(i, i - 1) = phi;
+        if (i > 0)
+            omega_vector.push_back(Triplet<double>(i, i - 1, phi)); 
+        omega_vector.push_back(Triplet<double>(i, i, 1));
+    }
+    omega.resize(n + 2, n + 2);
+    omega.setFromTriplets(omega_vector.begin(), omega_vector.end());
     //std::cout << omega << std::endl; 
     vector<VectorXd> v;
     v.push_back(VectorXd::Random(n));
@@ -123,8 +162,14 @@ double                  EigenTriangle::solve(int maxIter, double tol)
     VectorXd w;
     bool flag = false;
     int num = 0;    // reorthogonalization times
+    int last = -1;
     for (int i = 0; i < maxIter; i ++)
     {
+        if ((i + 1) * 100 / maxIter > last)
+        {
+            last = (i + 1) * 100 / maxIter;
+            std::cout << "\r" << "[EigenTriangle] Processing " << last << "% ..." << std::flush;
+        }
         //printf("== Iter %d ===\n", i);
         w = adjMatrix * v[i];
         alpha[i] = w.dot(v[i]);
@@ -141,36 +186,37 @@ double                  EigenTriangle::solve(int maxIter, double tol)
             for (int j = 0; j <= i; j ++)
                 v[i + 1] -= v[j].dot(v[i + 1]) * v[j];
             for (int j = 0; j <= i; j ++)
-                omega(i + 1, j) = phi;
-            /*
-            for (int j = 0; j <= i; j ++)
-                printf("%.5lf\n", v[i + 1].dot(v[j]));
-            */
+                omega.coeffRef(i + 1, j) = phi;
+            //for (int j = 0; j <= i; j ++)
+            //    printf("%.5lf\n", v[i + 1].dot(v[j]));
         }
         else
         {
-            omega(i + 1, 0) = 0.0;
+            omega.coeffRef(i + 1, 0) = 0.0;
             if (i > 0)
-                omega(i + 1, 0) = 1.0 / beta(i) * ((alpha(0) - alpha(i)) * omega(i, 0) - beta(i - 1) * omega(i - 1, 0)) + delta;
+            {
+                omega.coeffRef(i + 1, 0) = 1.0 / beta(i) * ((alpha(0) - alpha(i)) * omega.coeffRef(i, 0) - beta(i - 1) * omega.coeffRef(i - 1, 0)) + delta;
+            }
             for (int j = 1; j <= i; j ++)
             {
-                omega(i + 1, j) = 1.0 / beta(i) * (beta(j) * omega(i, j + 1) + (alpha(j) - alpha(i)) * omega(i, j) - beta(j - 1) * omega(i, j - 1) - beta(i - 1) * omega(i - 1, j)) + delta;
+                omega.coeffRef(i + 1, j) = 1.0 / beta(i) * (beta(j) * omega.coeffRef(i, j + 1) + (alpha(j) - alpha(i)) * omega.coeffRef(i, j) - beta(j - 1) * omega.coeffRef(i, j - 1) - beta(i - 1) * omega.coeffRef(i - 1, j)) + delta;
             }
         }
         double mx = 0.0;
         for (int j = 0; j <= i; j ++)
-            if (mx < fabs(omega(i + 1, j)))
-                mx = fabs(omega(i + 1, j));
+            if (mx < fabs(omega.coeffRef(i + 1, j)))
+                mx = fabs(omega.coeffRef(i + 1, j));
         if (mx > sqrt(tol))
         {
             for (int j = 0; j <= i; j ++)
-                omega(i + 1, j) = phi;
+                omega.coeffRef(i + 1, j) = phi;
             num ++;
             for (int j = 0; j <= i; j ++)
                 v[i + 1] -= v[i + 1].dot(v[j]) * v[j];
             flag = true;
         }
     }
+    printf("\n");
     int k = maxIter;
     MatrixXd T = MatrixXd::Zero(k, k);
     for (int i = 0; i < k; i ++)
@@ -184,7 +230,7 @@ double                  EigenTriangle::solve(int maxIter, double tol)
     //std::cout << T << std::endl;
 
     Eigen::EigenSolver<MatrixXd> eigenSolver;
-    eigenSolver.compute(T, /* computeEigenvectors = */ false);
+    eigenSolver.compute(T, false);
     Eigen::VectorXcd eigens = eigenSolver.eigenvalues();
     double res = 0;
     for (int i = 0; i < eigens.size(); i ++)
