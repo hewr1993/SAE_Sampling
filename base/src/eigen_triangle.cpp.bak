@@ -8,23 +8,13 @@
 #include <complex>
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
-#include <cmath>
-#include <algorithm>
-#include "areig.h"
-#include "lnmatrxc.h"
-#include "lsmatrxa.h"
-#include <set>
 
-using std::pair;
-using std::set;
 using std::vector;
 using std::string;
 using std::istringstream;
-using std::sort;
 using Eigen::VectorXd;
 using Eigen::MatrixXd;
 using Eigen::Triplet;
-using Eigen::SparseVector;
 using namespace sae::io;
 
 typedef Triplet<double> T;
@@ -35,31 +25,21 @@ EigenTriangle::EigenTriangle(MappedGraph *graph):Solver(graph)
     int n = graph -> VertexCount();
     vector<Triplet<double> > tripletList;
     //vector<Triplet<double> > edgeList;
-    edgeList.clear();
     for (auto iter = graph -> Edges(); iter -> Alive(); iter -> Next())
     {
         vid_t x = iter -> Source() -> GlobalId();
         vid_t y = iter -> Target() -> GlobalId();
         tripletList.push_back(Triplet<double>(x, y, 1));
         tripletList.push_back(Triplet<double>(y, x, 1));
-        //edgeList.push_back(make_pair(x, y));
-        if (x < y)
-        {
-            vid_t z = y;
-            y = x;
-            x = z;
-        }
-        edgeList.push_back(make_pair(x, y));
         //adjMatrix.coeffRef(x, y) = 1;
         //adjMatrix.coeffRef(y, x) = 1;
     }
-    sort(edgeList.begin(), edgeList.end());
     adjMatrix.resize(n, n);
     adjMatrix.setFromTriplets(tripletList.begin(), tripletList.end());
     // try compress mode
     adjMatrix.makeCompressed();
     tripletList.clear();
-    //printf("[EigenTriangle] Matrix is ready to go!\n");
+    printf("[EigenTriangle] Matrix is ready to go!\n");
 }
 
 EigenTriangle::~EigenTriangle()
@@ -67,74 +47,25 @@ EigenTriangle::~EigenTriangle()
     adjMatrix.resize(0, 0);
 }
 
-double                  EigenTriangle::solve(double tol)
+/*
+double                  EigenTriangle::solve(int maxIter, double tol)
 {
-    int n = (int) graph -> VertexCount();
-    int k = tol * n;
-    if (k < 10)
-        k = 10;
-    int nnz = edgeList.size();
-    vals = new double[nnz];
-    rows = new int[nnz];
-    cols = new int[n + 1];
-    int row_cnt = 0;
-    int col_cnt = 0;
-    for (unsigned int i = 0; i < edgeList.size(); i ++)
+    int n = graph -> VertexCount();
+    Sparse S(n);
+    for (auto iter = graph -> Edges(); iter -> Alive(); iter -> Next())
     {
-        int x = edgeList[i].first;
-        int y = edgeList[i].second;
-        //printf("%d %d\n", x, y);
-        if (i > 0 && edgeList[i - 1].first == edgeList[i].first && edgeList[i - 1].second == edgeList[i].second)
-            continue;
-        rows[row_cnt] = y;
-        vals[row_cnt] = 1.0;
-        if (i == 0 || (i > 0 && edgeList[i - 1].first != x))
-        {
-            int last = -1;
-            if (i > 0)
-                last = edgeList[i - 1].first;
-            for (int j = last + 1; j < x; j ++)
-                cols[col_cnt ++] = row_cnt;
-            cols[col_cnt ++] = row_cnt;
-        }
-        row_cnt ++;
+        vid_t x = iter -> Source() -> GolbalId();
+        vid_t y = iter -> Source() -> GlobalId();
+        S.set(x, y, 1);
+        S.set(y, x, 1);
     }
-    nnz = row_cnt;
-    for (; col_cnt <= n; col_cnt ++)
+    vector<double> eigenList;
+    for (int i = 0; i < maxIter; i ++)
     {
-        cols[col_cnt] = nnz;
+        
     }
-    /*
-    for (int i = 0; i < nnz; i ++)
-        printf("%d ", rows[i]);
-    printf("\n");
-    for (int i = 0; i <= n; i ++)
-        printf("%d ", cols[i]);
-    printf("\n");
-    */
-    //printf("%d %d %d %d\n", n, nnz, row_cnt, col_cnt);
-    //ARluSymMatrix<double> matrix(n, nnz, vals, rows, cols, 'U');
-    //ARluSymStdEig<double> dprob(k, matrix, "LM");
-    //printf("%d\n", dprob.ConvergedEigenvalues());
-    //dprob.FindEigenvalues();
-
-    double *eigVal = new double[k];
-    if (k == n)
-        k --;
-    AREig(eigVal, n, nnz, vals, rows, cols, 'U', k);
-    double res = 0;
-    //printf("Caculated Eigenvalues: %d\n", dprob.ConvergedEigenvalues());
-    //for (int i = 0; i < dprob.ConvergedEigenvalues(); i ++)
-    for (int i = 0; i < k; i ++)
-    {
-        //double eig = dprob.Eigenvalue(i);
-        //res += pow(eig, 3) / 6;
-        res += pow(eigVal[i], 3) / 6;
-        //printf("%.5lf\n", eigVal[i]);
-    }
-    delete []vals;
-    return res;
 }
+*/
 
 // full reorthogonalization
 double                  EigenTriangle::solve(int maxIter)
@@ -195,7 +126,6 @@ double                  EigenTriangle::solve(int maxIter)
     {
         std::complex<double> tmp = eigens[i];
         res += pow(tmp.real(), 3);
-        printf("%.5lf\n", tmp.real());
     }
     res /= 6;
     return res;
@@ -223,17 +153,13 @@ double                  EigenTriangle::solve(int maxIter, double tol)
     omega.resize(n + 2, n + 2);
     omega.setFromTriplets(omega_vector.begin(), omega_vector.end());
     //std::cout << omega << std::endl; 
-    vector<SparseVector<double> > v;
-    //v.push_back(SparseVector::Random(n));
-    SparseVector<double> firstV(n);
-    for (int i = 0; i < 100; i ++)
-        firstV.coeffRef(i % n) = i;
-    v.push_back(firstV);
+    vector<VectorXd> v;
+    v.push_back(VectorXd::Random(n));
     v[0] /= v[0].norm();
     VectorXd alpha(n);
     VectorXd beta(n + 1);
     beta[0] = 0;
-    SparseVector<double> w;
+    VectorXd w;
     bool flag = false;
     int num = 0;    // reorthogonalization times
     int last = -1;
@@ -246,7 +172,7 @@ double                  EigenTriangle::solve(int maxIter, double tol)
         }
         //printf("== Iter %d ===\n", i);
         w = adjMatrix * v[i];
-        alpha.coeffRef(i) = w.dot(v[i]);
+        alpha[i] = w.dot(v[i]);
         if (i == maxIter - 1)
             break;
         w -= alpha[i] * v[i];
@@ -310,10 +236,9 @@ double                  EigenTriangle::solve(int maxIter, double tol)
     for (int i = 0; i < eigens.size(); i ++)
     {
         std::complex<double> tmp = eigens[i];
-        res += pow(tmp.real(), 3) / 6;
-        std::cout << i << ": " << tmp << std::endl;
+        res += pow(tmp.real(), 3);
     }
-    //res /= 6;
+    res /= 6;
     return res;
 }
 
