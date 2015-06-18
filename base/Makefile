@@ -18,18 +18,19 @@ DIRNAME=$(shell basename `pwd`)
 
 
 PKGCONFIG_LIBS =
-INCLUDE_DIR = -Isrc/lib -I/home/weiran/.local/include/eigen3
-
+INCLUDE_DIR = -Isrc/lib -I/home/yang/.local/include/
+ARPACK_DIR = -Isrc/lib/arpack
 
 # CXXFLAGS += -O2
 CXXFLAGS += -g -O0
 CXXFLAGS += #-static -static-libstdc++
 CXXFLAGS += -lpthread #-fopenmp
-CXXFLAGS += -lreadline
+CXXFLAGS += -lreadline -lsuperlu   -larpack  -lblas  -llapack  -lgfortran
 CXXFLAGS += $(DEFINES)
 CXXFLAGS += -std=c++11
 CXXFLAGS += -Wall -Wextra
 CXXFLAGS += $(INCLUDE_DIR)
+CXXFLAGS += $(ARPACK_DIR)
 # CXXFLAGS += $(shell pkg-config --cflags --libs $(PKGCONFIG_LIBS))
 CXXFLAGS += #-m64
 
