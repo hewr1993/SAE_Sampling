@@ -26,8 +26,8 @@ int GetOrInsert(const string& key)
 
 int main(int argc, char **argv) {
     GraphBuilder<int> graph;
-    //ifstream fin("./resource/amazon0312.txt");
-    ifstream fin("./resource/twitter_combined.txt");
+    ifstream fin("./resource/ca-AstroPh.txt");
+    //ifstream fin("./resource/twitter_combined.txt");
     string buf;
     //for (int i = 0; i < 4; ++i) getline(fin, buf);
     int v_cnt(-1);
@@ -42,7 +42,7 @@ int main(int argc, char **argv) {
         graph.AddEdge(a, b, 0);
     }
     cout << graph.VertexCount() << " " << graph.EdgeCount() << endl;
-    graph.Save("./data/twitter");
+    graph.Save("./data/ca-astroph");
     return 0;
 }
 

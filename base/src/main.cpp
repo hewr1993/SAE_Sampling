@@ -51,8 +51,7 @@ void makeFakeData(int numVertex=10, double p = 0.1) {
 	graph.Save("./fake/graph");
 }
 
-
-void testTriangle(char* prefix="../data/data/amazon") {
+void testTriangle(char* prefix="../data/data/patent") {
     // prepare graph
     cout << "Loading data from " << prefix << endl;
 	MappedGraph *graph;
@@ -63,7 +62,7 @@ void testTriangle(char* prefix="../data/data/amazon") {
 	string title[] = {"Algo.", "Res.", "Error (%)", "Time (sec.)"};
 	table.setTitle(vector<string>(title, title + sizeof(title) / sizeof(title[0])));
     vector<string> bf_row;
-    bf_row.push_back("BruteForce");
+    bf_row.push_back("EdgeIterator");
     vector<string> greedy_row;
     greedy_row.push_back("Greedy");
     vector<string> eigen_row;
@@ -102,9 +101,10 @@ void testTriangle(char* prefix="../data/data/amazon") {
     // eigen
     EigenTriangle et(graph);
     time_t et_start_time = clock();
-    double k = 1;
-    double tol = 1;
-    double et_cnt = et.solve(graph -> VertexCount() * k, tol);
+    double k = 0.005;
+    double tol = 10;
+    double et_cnt = et.solve(k /*30 graph -> VertexCount() * k, tol*/);
+    //double et_cnt = et.solve((int) (graph -> VertexCount() * k));
     time_t et_end_time = clock();
     cout << "[eigen triangle]\t" << et_cnt << endl;
     double eigen_error = double(bf_cnt - et_cnt) / bf_cnt * 100;
@@ -114,13 +114,14 @@ void testTriangle(char* prefix="../data/data/amazon") {
 
     // streaming
     time_t stm_start_time = clock();
-	Triangle_Stream stm(50, 1000);
+	Triangle_Stream stm(10000, 10000);
 	int stream_cnt(0);
 	for (auto itr = graph->Edges(); itr->Alive(); itr->Next()) {
 		vid_t x = itr->Source()->GlobalId(), y = itr->Target()->GlobalId();
 		auto res = stm.solve(x, y);
 		stream_cnt = res.second;
 		cout << "\r" << "[streaming]\t" << res.first << " " << res.second << flush;
+        break;
 	}
     time_t stm_end_time = clock();
 	cout << endl;
