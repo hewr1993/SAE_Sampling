@@ -1,9 +1,3 @@
-/*************************************************************************
-	> Author: Wayne Ho
-	> Purpose: triangle brute force implementation
-	> Created Time: Fri Apr 24 01:09:22 2015
-	> Mail: hewr2010@gmail.com 
- ************************************************************************/
 #include "triangle_sampling.h"
 #include <vector>
 #include <set>
@@ -34,33 +28,30 @@ bool    edge_pool_cmp(pair<pair<vid_t, vid_t>, double> a, pair<pair<vid_t, vid_t
 }
 
 int Triangle_Sampling::solve(double p, double q) {
-	// remove duplicate edges
-	map<pair<vid_t, vid_t>, bool> edges;
-	for (auto itr = graph->Edges(); itr->Alive(); itr->Next()) {
-		vid_t x = itr->Source()->GlobalId(), y = itr->Target()->GlobalId();
-		if (edges.find(make_pair(x, y)) == edges.end()) {
-			edges[make_pair(x, y)] = true;
-			edges[make_pair(y, x)] = true;
-		}
-	}
 	// sampling edges
 	vector<pair<pair<vid_t, vid_t>, double> > edge_pool;
     set<vid_t> node_set;
     map<pair<vid_t, vid_t>, int> edge_pool_map;
     srand(time(0));
-	for (auto itr = edges.begin(); itr != edges.end(); ++itr) {
-		auto edge = itr->first;
-        vid_t a = edge.first;
-        vid_t b = edge.second;
+	for (auto itr = graph -> Edges(); itr -> Alive(); itr -> Next()) 
+    {
+        vid_t a = itr -> Source() -> GlobalId();
+        vid_t b = itr -> Target() -> GlobalId();
         if (a >= b)
-            continue;
+            swap(a, b);
+        auto edge = make_pair(a, b);
         double r = q;
-        int has_a = node_set.count(a);
-        int has_b = node_set.count(b);
-        if (has_a + has_b == 0)
-            r = p;
+        int has_a = 1;
+        int has_b = 1;
+        if (p != q)
+        {
+            has_a = node_set.count(a);
+            has_b = node_set.count(b);
+            if (has_a + has_b == 0)
+                r = p;
+        }
         double coin = Random();
-        if (coin <= r)
+        if (coin <= r && edge_pool_map.find(edge) == edge_pool_map.end())
         {
             int idx = (int) edge_pool.size();
             edge_pool.push_back(make_pair(edge, r));
@@ -87,8 +78,10 @@ int Triangle_Sampling::solve(double p, double q) {
             {
                 int a = edge_pool[i].first.second;
                 int b = edge_pool[j].first.second;
+                /*
                 if (a > b)
                     swap(a, b);
+                */
 			    auto key = make_pair(a, b);
                 map<pair<vid_t, vid_t>, int>::iterator it = edge_pool_map.find(key);
 			    if (it != edge_pool_map.end()) 
@@ -97,7 +90,6 @@ int Triangle_Sampling::solve(double p, double q) {
                     int k = it -> second;
                     double p = edge_pool[i].second * edge_pool[j].second * edge_pool[k].second;
                     res += 1.0 / p;
-                    //printf("%d %.5lf %.5lf %.5lf %.5lf\n", k, edge_pool[i].second, edge_pool[j].second, edge_pool[k].second, 1.0 / p);
                 }
 		    }
         }
@@ -106,3 +98,9 @@ int Triangle_Sampling::solve(double p, double q) {
     printf("sampling triangles: %d\n", cnt);
 	return res;
 }
+
+int Triangle_Sampling::solve(double q) 
+{
+    return solve(q, q);
+}
+
