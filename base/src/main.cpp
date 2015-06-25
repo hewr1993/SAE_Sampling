@@ -6,6 +6,7 @@
  ************************************************************************/
 #include "argparse/macro-argparse-jquery.hh"
 #include "solver/solver.h"
+#include "triangle_sampling.h"
 #include "eigen_triangle.h"
 #include "triangle_brute_force.h"
 #include "triangle_stream.h"
@@ -63,6 +64,8 @@ void testTriangle(char* prefix="../data/data/patent") {
 	table.setTitle(vector<string>(title, title + sizeof(title) / sizeof(title[0])));
     vector<string> bf_row;
     bf_row.push_back("EdgeIterator");
+    vector<string> sampling_row;
+    sampling_row.push_back("SamplingTriangle");
     vector<string> greedy_row;
     greedy_row.push_back("Greedy");
     vector<string> eigen_row;
@@ -80,13 +83,26 @@ void testTriangle(char* prefix="../data/data/patent") {
     // brute force
     Triangle_Brute_Force bf(graph);
     time_t bf_start_time = clock();
-    int bf_cnt = bf.solve();
+    int bf_cnt = 7515023;//bf.solve();
     time_t bf_end_time = clock();
-    cout << "[brute force]\t" << bf_cnt << endl;
+    cout << "[EdgeIteartor]\t" << bf_cnt << endl;
     double bf_error = 0.0;
     bf_row.push_back(toString<int>(bf_cnt));
     bf_row.push_back(toString<double>(bf_error));
     bf_row.push_back(toString<double>((bf_end_time - bf_start_time + 0.0) / CLOCKS_PER_SEC));
+
+    // sampling 
+    Triangle_Sampling sampling(graph);
+    double p = 0.1;
+    double q = 0.1;
+    time_t sampling_start_time = clock();
+    double sampling_cnt = sampling.solve(p, q);
+    time_t sampling_end_time = clock();
+    cout << "[sampling]\t" << sampling_cnt << endl;
+    double sampling_error = (bf_cnt - sampling_cnt) / bf_cnt * 100;
+    sampling_row.push_back(toString<double>(sampling_cnt));
+    sampling_row.push_back(toString<double>(sampling_error));
+    sampling_row.push_back(toString<double>((sampling_end_time - sampling_start_time + 0.0) / CLOCKS_PER_SEC));
 
     // greedy
     time_t greedy_start_time = clock();
@@ -99,11 +115,11 @@ void testTriangle(char* prefix="../data/data/patent") {
     greedy_row.push_back(toString<double>((greedy_end_time - greedy_start_time + 0.0) / CLOCKS_PER_SEC));
 
     // eigen
-    EigenTriangle et(graph);
+    //EigenTriangle et(graph);
     time_t et_start_time = clock();
     double k = 0.005;
     double tol = 10;
-    double et_cnt = et.solve(k /*30 graph -> VertexCount() * k, tol*/);
+    double et_cnt = 0;//et.solve(k /*30 graph -> VertexCount() * k, tol*/);
     //double et_cnt = et.solve((int) (graph -> VertexCount() * k));
     time_t et_end_time = clock();
     cout << "[eigen triangle]\t" << et_cnt << endl;
@@ -136,6 +152,7 @@ void testTriangle(char* prefix="../data/data/patent") {
     */
     // report table
     table.addRow(bf_row);
+    table.addRow(sampling_row);
     table.addRow(greedy_row);
     table.addRow(eigen_row);
     table.addRow(stm_row);
@@ -167,7 +184,8 @@ int main(int argc, char **argv) {
     double edgeProb = 0.7;
 	// parse arguments
 	Argument args;
-	if (!args.parse_args(argc, argv)) return 1;
+	if (!args.parse_args(argc, argv)) 
+        return 1;
 	//cout << args.content() << endl;
 	
 	// main process
