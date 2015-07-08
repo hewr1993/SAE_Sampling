@@ -27,7 +27,8 @@ bool    edge_pool_cmp(pair<pair<vid_t, vid_t>, double> a, pair<pair<vid_t, vid_t
     return a.first.first < b.first.first;
 }
 
-int Triangle_Sampling::solve(double p, double q) {
+double Triangle_Sampling::solve(double p, double q) 
+{
 	// sampling edges
 	vector<pair<pair<vid_t, vid_t>, double> > edge_pool;
     set<vid_t> node_set;
@@ -90,6 +91,7 @@ int Triangle_Sampling::solve(double p, double q) {
                     int k = it -> second;
                     double p = edge_pool[i].second * edge_pool[j].second * edge_pool[k].second;
                     res += 1.0 / p;
+                    //printf("%.5lf %.5lf %.5lf %.5lf %.5lf\n", edge_pool[i].second, edge_pool[j].second, edge_pool[k].second, 1.0/p, res);
                 }
 		    }
         }
@@ -99,7 +101,7 @@ int Triangle_Sampling::solve(double p, double q) {
 	return res;
 }
 
-int Triangle_Sampling::solve(double q) 
+double Triangle_Sampling::solve(double q) 
 {
     return solve(q, q);
 }

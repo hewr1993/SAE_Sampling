@@ -1,9 +1,3 @@
-/*************************************************************************
-	> Author: Wayne Ho
-	> Purpose: triangle brute force implementation
-	> Created Time: Fri Apr 24 01:09:22 2015
-	> Mail: hewr2010@gmail.com 
- ************************************************************************/
 #include "triangle_brute_force.h"
 #include <vector>
 #include <algorithm>

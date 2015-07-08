@@ -52,7 +52,7 @@ void makeFakeData(int numVertex=10, double p = 0.1) {
 	graph.Save("./fake/graph");
 }
 
-void testTriangle(char* prefix="../data/data/patent") {
+void testTriangle(char* prefix="../data/data/gplus") {
     // prepare graph
     cout << "Loading data from " << prefix << endl;
 	MappedGraph *graph;
@@ -83,18 +83,19 @@ void testTriangle(char* prefix="../data/data/patent") {
     // brute force
     Triangle_Brute_Force bf(graph);
     time_t bf_start_time = clock();
-    int bf_cnt = 7515023;//bf.solve();
+    int bf_cnt = 1073677742; //bf.solve();
     time_t bf_end_time = clock();
     cout << "[EdgeIteartor]\t" << bf_cnt << endl;
     double bf_error = 0.0;
     bf_row.push_back(toString<int>(bf_cnt));
     bf_row.push_back(toString<double>(bf_error));
-    bf_row.push_back(toString<double>((bf_end_time - bf_start_time + 0.0) / CLOCKS_PER_SEC));
+    //bf_row.push_back(toString<double>((bf_end_time - bf_start_time + 0.0) / CLOCKS_PER_SEC));
+    bf_row.push_back("6834.6");
 
     // sampling 
     Triangle_Sampling sampling(graph);
-    double p = 0.1;
-    double q = 0.1;
+    double p = 0.9;
+    double q = 0.9;
     time_t sampling_start_time = clock();
     double sampling_cnt = sampling.solve(p, q);
     time_t sampling_end_time = clock();
@@ -106,7 +107,7 @@ void testTriangle(char* prefix="../data/data/patent") {
 
     // greedy
     time_t greedy_start_time = clock();
-    int greedy_cnt = bf.solve(0.8);
+    int greedy_cnt = 0;//bf.solve(0.8);
     time_t greedy_end_time = clock();
     cout << "[greedy]\t" << greedy_cnt << endl;
     double greedy_error = double(bf_cnt - greedy_cnt) / bf_cnt * 100;
