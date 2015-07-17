@@ -32,6 +32,7 @@ parser.add_argument("-g",
                     action="store_true")
 args = parser.parse_args()
 
+import time
 import random
 from pyspark import SparkContext
 from operator import add
@@ -59,6 +60,7 @@ def calTriangles(edges_dict, x, _l):
 
 if __name__ == "__main__":
     sc = SparkContext(appName="PythonTriangleSampling")
+    st_time = time.time()
     lines = sc.textFile(args.input, args.split)\
         .zipWithIndex()\
         .filter(lambda x: x[1] > 0)\
@@ -71,11 +73,15 @@ if __name__ == "__main__":
     if args.g:
         std = int(open("./standard.txt").read())
         err = float(ans - std) / std
+        cost_time = time.time() - st_time
     print ans
     if args.g:
         print err
+        print cost_time
     if args.output != "":
         with open(args.output, "w") as fout:
             print >> fout, ans
             if args.g:
                 print >> fout, err
+                print >> fout, cost_time
+    sc.stop()

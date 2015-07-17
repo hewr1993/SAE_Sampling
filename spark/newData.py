@@ -14,7 +14,7 @@ def perform(cmd):
     os.system(cmd)
 
 if __name__ == "__main__":
-    points, edges = 1000, 100000
+    points, edges = 10000, 3000000
     perform("./genGraph.py %d %d > ./input.txt" % (points, edges))
     perform("./bruteforce < ./input.txt > ./standard.txt")
     perform("cat ./standard.txt")
