@@ -1,0 +1,1 @@
+g++ bruteforce.cpp -o bruteforce -O2 --std=c++11

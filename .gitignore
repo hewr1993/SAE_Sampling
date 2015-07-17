@@ -42,3 +42,9 @@ base/fake/*
 data/data/*
 data/bin/*
 data/obj/*
+
+# spark files
+spark/input.txt
+spark/result.txt
+spark/standard.txt
+spark/bruteforce
