@@ -42,9 +42,11 @@ base/fake/*
 data/data/*
 data/bin/*
 data/obj/*
+network_data/*.txt
 
 # spark files
 spark/input.txt
 spark/result.txt
 spark/standard.txt
 spark/bruteforce
+
