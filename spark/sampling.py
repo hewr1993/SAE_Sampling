@@ -28,7 +28,7 @@ parser.add_argument("--split", "-s",
                     default=1,
                     type=int)
 parser.add_argument("-g",
-                    help="compare with the standard result",
+                    help="debug info (runtime)",
                     action="store_true")
 args = parser.parse_args()
 
@@ -71,17 +71,17 @@ if __name__ == "__main__":
     edges_pool = edges_pool.groupByKey().map(lambda o: calTriangles(edges_dict, o[0], o[1]))
     ans = int(edges_pool.reduce(add))
     if args.g:
-        std = int(open("./standard.txt").read())
-        err = float(ans - std) / std
+        #std = int(open("./standard.txt").read())
+        #err = float(ans - std) / std
         cost_time = time.time() - st_time
     print ans
     if args.g:
-        print err
+        #print err
         print cost_time
     if args.output != "":
         with open(args.output, "w") as fout:
             print >> fout, ans
             if args.g:
-                print >> fout, err
+                #print >> fout, err
                 print >> fout, cost_time
     sc.stop()

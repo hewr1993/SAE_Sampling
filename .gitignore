@@ -49,4 +49,5 @@ spark/input.txt
 spark/result.txt
 spark/standard.txt
 spark/bruteforce
-
+spark/nul
+spark/tmp
