@@ -22,6 +22,7 @@ if __name__ == "__main__":
     for line in os.popen("ls " + datadir):
         times = {}
         times["bf-C++"] = perform("./bruteforce < %s > ./standard.txt" % (datadir + line[:-1]))
+        times["bf"] = perform("./bruteforce.py -i %s > ./standard.txt" % (datadir + line[:-1]))
         times["smpl-total"], times["smpl-raw"] = [], []
         for i in xrange(4):
             thread_num = 2 ** i
