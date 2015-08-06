@@ -52,7 +52,7 @@ void makeFakeData(int numVertex=10, double p = 0.1) {
 	graph.Save("./fake/graph");
 }
 
-void testTriangle(char* prefix="../data/data/gplus") {
+void testTriangle(char* prefix="../data/data/slashdot09") {
     // prepare graph
     cout << "Loading data from " << prefix << endl;
 	MappedGraph *graph;
@@ -83,19 +83,20 @@ void testTriangle(char* prefix="../data/data/gplus") {
     // brute force
     Triangle_Brute_Force bf(graph);
     time_t bf_start_time = clock();
-    int bf_cnt = 1073677742; //bf.solve();
+    int bf_cnt = bf.solve();
+    //int bf_cnt = bf.solve();
     time_t bf_end_time = clock();
     cout << "[EdgeIteartor]\t" << bf_cnt << endl;
     double bf_error = 0.0;
     bf_row.push_back(toString<int>(bf_cnt));
     bf_row.push_back(toString<double>(bf_error));
-    //bf_row.push_back(toString<double>((bf_end_time - bf_start_time + 0.0) / CLOCKS_PER_SEC));
-    bf_row.push_back("6834.6");
+    bf_row.push_back(toString<double>((bf_end_time - bf_start_time + 0.0) / CLOCKS_PER_SEC));
+    //bf_row.push_back("6834.6");
 
     // sampling 
     Triangle_Sampling sampling(graph);
-    double p = 0.9;
-    double q = 0.9;
+    double p = 0.1;
+    double q = 0.1;
     time_t sampling_start_time = clock();
     double sampling_cnt = sampling.solve(p, q);
     time_t sampling_end_time = clock();
@@ -192,7 +193,7 @@ int main(int argc, char **argv) {
 	// main process
 	srand(time(NULL));
 	//testTable();
-	makeFakeData(vertexNum, edgeProb);
+	//makeFakeData(vertexNum, edgeProb);
 	testTriangle();
     return 0;
 }
